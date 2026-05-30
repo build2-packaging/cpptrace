@@ -1,0 +1,15 @@
+: 1
+name: libcpptrace
+version: 1.0.4-a.0.z
+language: c++
+project: cpptrace
+summary: Portable C++ stacktrace library.
+license: MIT ; MIT License.
+description-file: README.md
+package-description-file: PACKAGE-README.md
+changes-file: CHANGELOG.md
+url: https://github.com/jeremy-rifkin/cpptrace
+package-url: https://github.com/build2-packaging/cpptrace
+package-email: packaging@build2.org ; Mailing list.
+depends: * build2 >= 0.18.0
+depends: * bpkg >= 0.18.0
