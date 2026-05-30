@@ -1,6 +1,29 @@
-libs =
-#import libs += libhello%lib{hello}
+# On mingw32, build2 stages DLLs as POSIX-style symlinks that native Windows
+# tools such as addr2line cannot follow. Link everything statically so all code
+# lands in unittest.exe and addr2line only has to resolve against one real file.
+if ($cxx.target.system == 'mingw32')
+  import libs = \
+    libcpptrace%liba{cpptrace} \
+    gtest%liba{gtest} \
+    gmock%liba{gmock}
+else
+  import libs = \
+    libcpptrace%lib{cpptrace} \
+    gtest%lib{gtest} \
+    gmock%lib{gmock}
 
-exe{libcpptrace-tests}: {hxx ixx txx cxx}{**} $libs testscript
+# NOTE: the executable must be named "unittest" to match the substring the
+# object_trace tests check for in the binary path.
+exe{unittest}: src/{hxx ixx txx cxx}{**} $libs testscript{**}
 
-cxx.poptions =+ "-I$out_root" "-I$src_root"
+cxx.poptions =+ "-I$src_base/cpptrace-src"
+
+if ($cxx.class == 'msvc')
+  cxx.coptions += /Zi
+else
+  cxx.coptions += -g
+
+# All non-MinGW Windows targets (MSVC and clang) need /DEBUG so the linker
+# emits a PDB that dbghelp can use for symbol resolution.
+if ($cxx.target.class == 'windows' && $cxx.target.system != 'mingw32')
+  exe{unittest}: cxx.loptions += /DEBUG
