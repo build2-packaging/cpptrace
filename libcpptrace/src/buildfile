@@ -10,11 +10,54 @@ include $pub
 
 pub_hdrs = $($pub/ pub_hdrs)
 
+# Unwind back-ends.
+#
+unwind_with_unwind    = $config.libcpptrace.unwind_with_unwind
+unwind_with_execinfo  = $config.libcpptrace.unwind_with_execinfo
+unwind_with_winapi    = $config.libcpptrace.unwind_with_winapi
+unwind_with_dbghelp   = $config.libcpptrace.unwind_with_dbghelp
+unwind_with_libunwind = $config.libcpptrace.unwind_with_libunwind
+unwind_with_nothing   = $config.libcpptrace.unwind_with_nothing
+
+# Symbol resolution back-ends.
+#
+symbols_with_libdwarf     = $config.libcpptrace.symbols_with_libdwarf
+symbols_with_dbghelp      = $config.libcpptrace.symbols_with_dbghelp
+symbols_with_libbacktrace = $config.libcpptrace.symbols_with_libbacktrace
+symbols_with_addr2line    = $config.libcpptrace.symbols_with_addr2line
+symbols_with_libdl        = $config.libcpptrace.symbols_with_libdl
+symbols_with_nothing      = $config.libcpptrace.symbols_with_nothing
+
+# Demangling back-ends.
+#
+demangle_with_cxxabi  = $config.libcpptrace.demangle_with_cxxabi
+demangle_with_winapi  = $config.libcpptrace.demangle_with_winapi
+demangle_with_nothing = $config.libcpptrace.demangle_with_nothing
+
 lib{cpptrace}: $pub/{$pub_hdrs}
 
 # Private headers and sources as well as dependencies.
 #
-lib{cpptrace}: {hxx ixx txx cxx}{**} $impl_libs $intf_libs
+lib{cpptrace}: cpptrace/{h hxx cxx mxx}{** -unwind/** -symbols/symbols_with_* -demangle/demangle_with_*} \
+               $impl_libs $intf_libs
+
+lib{cpptrace}: cpptrace/unwind/cxx{unwind_with_unwind}:         include = $unwind_with_unwind
+lib{cpptrace}: cpptrace/unwind/cxx{unwind_with_execinfo}:       include = $unwind_with_execinfo
+lib{cpptrace}: cpptrace/unwind/cxx{unwind_with_winapi}:         include = $unwind_with_winapi
+lib{cpptrace}: cpptrace/unwind/cxx{unwind_with_dbghelp}:        include = $unwind_with_dbghelp
+lib{cpptrace}: cpptrace/unwind/cxx{unwind_with_libunwind}:      include = $unwind_with_libunwind
+lib{cpptrace}: cpptrace/unwind/cxx{unwind_with_nothing}:        include = $unwind_with_nothing
+
+lib{cpptrace}: cpptrace/symbols/cxx{symbols_with_libdwarf}:     include = $symbols_with_libdwarf
+lib{cpptrace}: cpptrace/symbols/cxx{symbols_with_dbghelp}:      include = $symbols_with_dbghelp
+lib{cpptrace}: cpptrace/symbols/cxx{symbols_with_libbacktrace}: include = $symbols_with_libbacktrace
+lib{cpptrace}: cpptrace/symbols/cxx{symbols_with_addr2line}:    include = $symbols_with_addr2line
+lib{cpptrace}: cpptrace/symbols/cxx{symbols_with_dl}:           include = $symbols_with_libdl
+lib{cpptrace}: cpptrace/symbols/cxx{symbols_with_nothing}:      include = $symbols_with_nothing
+
+lib{cpptrace}: cpptrace/demangle/cxx{demangle_with_cxxabi}:     include = $demangle_with_cxxabi
+lib{cpptrace}: cpptrace/demangle/cxx{demangle_with_winapi}:     include = $demangle_with_winapi
+lib{cpptrace}: cpptrace/demangle/cxx{demangle_with_nothing}:    include = $demangle_with_nothing
 
 # Build options.
 #
@@ -23,22 +66,75 @@ src_pfx_inc = [dir_path] $src_root/include/
 out_pfx_src = [dir_path] $out_root/src/
 src_pfx_src = [dir_path] $src_root/src/
 
-cxx.poptions =+ "-I$out_pfx_src" "-I$src_pfx_src" \
-                "-I$out_pfx_inc" "-I$src_pfx_inc"
+cxx.poptions =+ "-I$src_base/cpptrace" "-I$src_pfx_src" "-I$src_pfx_inc"
 
-#obja{*}: cxx.poptions += -DLIBCPPTRACE_STATIC_BUILD
-#objs{*}: cxx.poptions += -DLIBCPPTRACE_SHARED_BUILD
+if ($cxx.target.system != 'win32-msvc')
+  objs{**}: cxx.coptions += -Wno-missing-field-initializers \
+                            -fvisibility=hidden \
+                            -fvisibility-inlines-hidden \
+                            -fPIC
+
+obja{**}: cxx.poptions += -DCPPTRACE_STATIC_DEFINE
+objs{**}: cxx.poptions += -Dcpptrace_lib_EXPORTS
+
+# Unwind back-ends.
+#
+obj{**}: cxx.poptions += \
+  ($unwind_with_unwind    ? -DCPPTRACE_UNWIND_WITH_UNWIND    :) \
+  ($unwind_with_execinfo  ? -DCPPTRACE_UNWIND_WITH_EXECINFO  :) \
+  ($unwind_with_winapi    ? -DCPPTRACE_UNWIND_WITH_WINAPI    :) \
+  ($unwind_with_dbghelp   ? -DCPPTRACE_UNWIND_WITH_DBGHELP   :) \
+  ($unwind_with_libunwind ? -DCPPTRACE_UNWIND_WITH_LIBUNWIND :) \
+  ($unwind_with_nothing   ? -DCPPTRACE_UNWIND_WITH_NOTHING   :)
+
+# Symbol resolution back-ends.
+#
+obj{**}: cxx.poptions += \
+  ($symbols_with_libdwarf     ? -DCPPTRACE_GET_SYMBOLS_WITH_LIBDWARF     :) \
+  ($symbols_with_dbghelp      ? -DCPPTRACE_GET_SYMBOLS_WITH_DBGHELP      :) \
+  ($symbols_with_libbacktrace ? -DCPPTRACE_GET_SYMBOLS_WITH_LIBBACKTRACE :) \
+  ($symbols_with_addr2line    ? -DCPPTRACE_GET_SYMBOLS_WITH_ADDR2LINE -DCPPTRACE_ADDR2LINE_SEARCH_SYSTEM_PATH :) \
+  ($symbols_with_libdl        ? -DCPPTRACE_GET_SYMBOLS_WITH_LIBDL        :) \
+  ($symbols_with_nothing      ? -DCPPTRACE_GET_SYMBOLS_WITH_NOTHING      :)
+
+# Demangling back-ends.
+#
+obj{**}: cxx.poptions += \
+  ($demangle_with_cxxabi  ? -DCPPTRACE_DEMANGLE_WITH_CXXABI  :) \
+  ($demangle_with_winapi  ? -DCPPTRACE_DEMANGLE_WITH_WINAPI  :) \
+  ($demangle_with_nothing ? -DCPPTRACE_DEMANGLE_WITH_NOTHING :)
+
+# System libraries.
+#
+if ($unwind_with_dbghelp || $symbols_with_dbghelp || $demangle_with_winapi)
+{
+  if ($cxx.target.system == 'mingw32')
+    cxx.libs += -ldbghelp
+  else
+    cxx.libs += dbghelp.lib
+}
+
+if ($symbols_with_libdwarf || $symbols_with_libdl || $symbols_with_libbacktrace || $symbols_with_addr2line)
+{
+  if ($cxx.target.class != 'windows')
+    cxx.libs += -ldl
+}
+
+if ($symbols_with_libbacktrace)
+  cxx.libs += -lbacktrace
+
+if ($unwind_with_libunwind)
+  cxx.libs += -lunwind
 
 # Export options.
 #
 lib{cpptrace}:
 {
-  cxx.export.poptions = "-I$out_pfx_inc" "-I$src_pfx_inc"
+  cxx.export.poptions = "-I$src_base" "-I$src_pfx_src" "-I$src_pfx_inc"
   cxx.export.libs = $intf_libs
 }
 
-#liba{cpptrace}: cxx.export.poptions += -DLIBCPPTRACE_STATIC
-#libs{cpptrace}: cxx.export.poptions += -DLIBCPPTRACE_SHARED
+liba{cpptrace}: cxx.export.poptions += -DCPPTRACE_STATIC_DEFINE
 
 # For pre-releases use the complete version to make sure they cannot
 # be used in place of another pre-release or the final version. See

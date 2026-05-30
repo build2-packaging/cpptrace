@@ -3,13 +3,51 @@
 #cxx.internal.scope = current
 
 cxx.std = latest
+# c.std = latest
 
 using cxx
+using c
 
-hxx{*}: extension = hxx
-ixx{*}: extension = ixx
-txx{*}: extension = txx
-cxx{*}: extension = cxx
+hxx{*}: extension = hpp
+ixx{*}: extension = ipp
+txx{*}: extension = tpp
+cxx{*}: extension = cpp
+mxx{*}: extension = cppm
+
+h{*}: extension = h
+c{*}: extension = c
+
+# Back-end selection. See ../README.md, section "Library Back-Ends".
+#
+# Unwind back-ends.
+# unwind_with_dbghelp and unwind_with_execinfo are set first; unwind_with_unwind
+# is the fallback derived from neither of the above being active.
+#
+config [bool] config.libcpptrace.unwind_with_dbghelp   ?= ($cxx.target.class == 'windows')
+config [bool] config.libcpptrace.unwind_with_execinfo  ?= ($cxx.target.system == 'darwin')
+config [bool] config.libcpptrace.unwind_with_unwind    ?= ($config.libcpptrace.unwind_with_dbghelp || $config.libcpptrace.unwind_with_execinfo ? false : true)
+config [bool] config.libcpptrace.unwind_with_winapi    ?= false
+config [bool] config.libcpptrace.unwind_with_libunwind ?= false
+config [bool] config.libcpptrace.unwind_with_nothing   ?= false
+
+# Symbol resolution back-ends.
+# symbols_with_dbghelp applies to all non-MinGW Windows targets (MSVC and
+# clang targeting Windows): dbghelp reads CodeView/PDB and does not resolve
+# symbols from GCC/clang DWARF embedded in PE binaries (mingw32).
+# symbols_with_addr2line is the default on mingw32 where DWARF is used.
+#
+config [bool] config.libcpptrace.symbols_with_libdwarf     ?= false
+config [bool] config.libcpptrace.symbols_with_dbghelp      ?= ($cxx.target.class == 'windows' && $cxx.target.system != 'mingw32')
+config [bool] config.libcpptrace.symbols_with_libbacktrace ?= false
+config [bool] config.libcpptrace.symbols_with_addr2line    ?= ($cxx.target.system == 'mingw32' || (!$config.libcpptrace.symbols_with_dbghelp && $cxx.target.class != 'windows'))
+config [bool] config.libcpptrace.symbols_with_libdl        ?= false
+config [bool] config.libcpptrace.symbols_with_nothing      ?= false
+
+# Demangling back-ends.
+#
+config [bool] config.libcpptrace.demangle_with_cxxabi  ?= (!($cxx.target.class == 'windows' && $cxx.target.system != 'mingw32'))
+config [bool] config.libcpptrace.demangle_with_winapi  ?= ($cxx.target.class == 'windows' && $cxx.target.system != 'mingw32')
+config [bool] config.libcpptrace.demangle_with_nothing ?= false
 
 # The test target for cross-testing (running tests under Wine, etc).
 #
