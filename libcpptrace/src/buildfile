@@ -149,3 +149,11 @@ else
 # Don't install private headers.
 #
 {hxx ixx txx}{*}: install = false
+
+# Install module interfaces.
+#
+{mxx}{*}:
+{
+  install         = include/cpptrace/
+  install.subdirs = false
+}
