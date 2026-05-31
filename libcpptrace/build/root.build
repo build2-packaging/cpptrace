@@ -23,7 +23,7 @@ c{*}: extension = c
 # is the fallback derived from neither of the above being active.
 #
 config [bool] config.libcpptrace.unwind_with_dbghelp   ?= ($cxx.target.class == 'windows')
-config [bool] config.libcpptrace.unwind_with_execinfo  ?= ($cxx.target.system == 'darwin')
+config [bool] config.libcpptrace.unwind_with_execinfo  ?= ($cxx.target.system == 'darwin' && $cxx.stdlib == 'libc++')
 config [bool] config.libcpptrace.unwind_with_unwind    ?= ($config.libcpptrace.unwind_with_dbghelp || $config.libcpptrace.unwind_with_execinfo ? false : true)
 config [bool] config.libcpptrace.unwind_with_winapi    ?= false
 config [bool] config.libcpptrace.unwind_with_libunwind ?= false
