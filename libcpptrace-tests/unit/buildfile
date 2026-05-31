@@ -18,15 +18,19 @@ exe{unittest}: src/{hxx ixx txx cxx}{**} cpptrace-src/{h hxx ixx txx}{**} $libs 
 
 cxx.poptions =+ "-I$src_base/cpptrace-src"
 
+# Upstream builds unit tests at -O0 (Debug) (the tests assume no inlining of
+# throw-site lambdas and check for specific filenames and line numbers in
+# traces).
+#
 if ($cxx.class == 'msvc')
-  cxx.coptions += /Zi
+  cxx.coptions += /Zi /Od
 elif ($cxx.id == 'clang' && $cxx.target.system == 'darwin')
   # Clang on darwin generates DWARF5 with __debug_names tables that Apple's
   # CoreSymbolication (used by atos) cannot parse. Force DWARF4 so the
   # compiler emits __apple_names tables instead, which atos handles correctly.
-  cxx.coptions += -g -gdwarf-4
+  cxx.coptions += -g -gdwarf-4 -O0
 else
-  cxx.coptions += -g
+  cxx.coptions += -g -O0
 
 # All non-MinGW Windows targets (MSVC and clang) need /DEBUG so the linker
 # emits a PDB that dbghelp can use for symbol resolution.
