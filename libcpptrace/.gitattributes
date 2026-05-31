@@ -1,2 +1,3 @@
 include/cpptrace symlink=dir
 include/ctrace   symlink=dir
+src/cpptrace     symlink=dir
