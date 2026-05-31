@@ -16,6 +16,10 @@ mxx{*}: extension = cppm
 h{*}: extension = h
 c{*}: extension = c
 
+# The test target for cross-testing (running tests under Wine, etc).
+#
+test.target = $cxx.target
+
 # Back-end selection. See ../README.md, section "Library Back-Ends".
 #
 # Unwind back-ends.
@@ -48,6 +52,7 @@ config [bool] config.libcpptrace.demangle_with_cxxabi  ?= (!($cxx.target.class =
 config [bool] config.libcpptrace.demangle_with_winapi  ?= ($cxx.target.class == 'windows' && $cxx.target.system != 'mingw32')
 config [bool] config.libcpptrace.demangle_with_nothing ?= false
 
-# The test target for cross-testing (running tests under Wine, etc).
-#
-test.target = $cxx.target
+config [bool] config.libcpptrace.build_testing ?= false
+
+if($build.mode != 'skeleton' && $config.libcpptrace.build_testing)
+  info "configured for testing \(config.libcpptrace.build_testing=true\)"

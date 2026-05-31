@@ -14,9 +14,7 @@ else
 
 # NOTE: the executable must be named "unittest" to match the substring the
 # object_trace tests check for in the binary path.
-exe{unittest}: src/{hxx ixx txx cxx}{**} cpptrace-src/{h hxx ixx txx}{**} $libs testscript{**}
-
-cxx.poptions =+ "-I$src_base/cpptrace-src"
+exe{unittest}: src/{hxx ixx txx cxx}{**} $libs testscript{**}
 
 # Upstream suppresses these warnings on the unit test target.
 #
