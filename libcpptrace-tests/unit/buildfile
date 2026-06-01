@@ -12,6 +12,8 @@ else
     gtest%lib{gtest} \
     gmock%lib{gmock}
 
+exe{*}: test.arguments = --gtest_brief=1
+
 # NOTE: the executable must be named "unittest" to match the substring the
 # object_trace tests check for in the binary path.
 exe{unittest}: src/{hxx ixx txx cxx}{**} $libs testscript{**}
