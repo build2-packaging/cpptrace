@@ -1,6 +1,6 @@
 : 1
 name: libcpptrace-tests
-version: 1.0.4-a.0.z
+version: 1.0.4
 type: exe
 language: c++
 project: cpptrace
