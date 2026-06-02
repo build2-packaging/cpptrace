@@ -1,6 +1,17 @@
-pub_hdrs = {h hxx ixx txx}{**}
+using in
+
+pub_hdrs = {h hxx ixx txx}{**} cpptrace/hxx{version}
 
 ./: $pub_hdrs
+
+[rule_hint=in] \
+cpptrace/hxx{version}: in{version} $src_root/manifest
+{
+  in.symbol = '@'
+  CPPTRACE_VERSION_MAJOR = $version.major
+  CPPTRACE_VERSION_MINOR = $version.minor
+  CPPTRACE_VERSION_PATCH = $version.patch
+}
 
 # Install recreating subdirectories.
 #

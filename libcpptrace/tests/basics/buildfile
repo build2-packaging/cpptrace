@@ -1,3 +1,7 @@
 import libs = libcpptrace%lib{cpptrace}
 
-exe{driver}: {hxx ixx txx cxx mxx}{**} $libs testscript
+for t : cxx{*}
+{
+  n = $name($t)
+  ./: exe{driver-$n}: $t $libs testscript
+}
