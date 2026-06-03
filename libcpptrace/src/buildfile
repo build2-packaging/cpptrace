@@ -45,6 +45,9 @@ demangle_with_nothing = $config.libcpptrace.demangle_with_nothing
 # included from a config header.
 #
 h{cpptrace-autoconf}: in{cpptrace-autoconf}
+{
+  install = false
+}
 
 [rule_hint=c.predefs] \
 buildfile{cpptrace-autoconf}: h{cpptrace-autoconf}
