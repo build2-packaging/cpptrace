@@ -52,6 +52,7 @@ demangle_with_nothing = $config.libcpptrace.demangle_with_nothing
 h{cpptrace-autoconf}: in{cpptrace-autoconf}
 {
   install = false
+  autoconf.aliases = HAVE_DL_FIND_OBJECT@HAVE__DL_FIND_OBJECT
 }
 
 [rule_hint=c.predefs] \
