@@ -36,6 +36,13 @@ if ($symbols_with_libdwarf)
 {
   import impl_libs += libz%lib{z}
   import impl_libs += libzstd%lib{zstd}
+
+  # Note that libdwarf is not (yet) packaged, so we cannot obtain it
+  # through bpkg here. Expect it to be supplied by the host environment
+  # instead. For MinGW this normally means either a system package, if
+  # one exists, or a manually built libdwarf using the same toolchain.
+  #
+  import impl_libs += libdwarf%lib{dwarf}
 }
 
 # Demangling back-ends.
