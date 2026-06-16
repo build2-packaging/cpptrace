@@ -179,7 +179,7 @@ if ($cxx.target.class == 'linux')
   sys_libs += -ldl
 
 if ($cxx.target.system == 'mingw32' && \
-    ($symbols_with_libdwarf || $symbols_with_libdl || $symbols_with_libbacktrace))
+    ($symbols_with_libdl || $symbols_with_libbacktrace))
   sys_libs += -ldl
 
 if ($symbols_with_libbacktrace)
