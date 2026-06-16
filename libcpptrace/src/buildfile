@@ -34,8 +34,9 @@ symbols_with_nothing      = $config.libcpptrace.symbols_with_nothing
 
 if ($symbols_with_libdwarf)
 {
-  import impl_libs += libz%lib{z}
-  import impl_libs += libzstd%lib{zstd}
+  import impl_libs += libdwarf%lib{dwarf} \
+                      libz%lib{z} \
+                      libzstd%lib{zstd}
 }
 
 # Demangling back-ends.
@@ -180,9 +181,6 @@ if ($cxx.target.class == 'linux')
 if ($cxx.target.system == 'mingw32' && \
     ($symbols_with_libdwarf || $symbols_with_libdl || $symbols_with_libbacktrace))
   sys_libs += -ldl
-
-if ($symbols_with_libdwarf)
-  sys_libs += -ldwarf
 
 if ($symbols_with_libbacktrace)
   sys_libs += -lbacktrace

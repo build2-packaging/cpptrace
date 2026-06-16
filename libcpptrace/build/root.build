@@ -35,15 +35,14 @@ config [bool] config.libcpptrace.unwind_with_libunwind ?= false
 config [bool] config.libcpptrace.unwind_with_nothing   ?= false
 
 # Symbol resolution back-ends.
-# symbols_with_dbghelp applies to all non-MinGW Windows targets (MSVC and
-# clang targeting Windows): dbghelp reads CodeView/PDB and does not resolve
-# symbols from GCC/clang DWARF embedded in PE binaries (mingw32).
-# symbols_with_addr2line is the default on mingw32 where DWARF is used.
+# symbols_with_libdwarf is the default on UNIX and mingw32 (DWARF-based).
+# symbols_with_dbghelp is enabled on all Windows targets (MSVC and mingw32):
+# on mingw32 it supplements libdwarf to cover PDB symbols from system DLLs.
 #
-config [bool] config.libcpptrace.symbols_with_libdwarf     ?= false
-config [bool] config.libcpptrace.symbols_with_dbghelp      ?= ($cxx.target.class == 'windows' && $cxx.target.system != 'mingw32')
+config [bool] config.libcpptrace.symbols_with_libdwarf     ?= ($cxx.target.class != 'windows' || $cxx.target.system == 'mingw32')
+config [bool] config.libcpptrace.symbols_with_dbghelp      ?= ($cxx.target.class == 'windows')
 config [bool] config.libcpptrace.symbols_with_libbacktrace ?= false
-config [bool] config.libcpptrace.symbols_with_addr2line    ?= ($cxx.target.system == 'mingw32' || (!$config.libcpptrace.symbols_with_dbghelp && $cxx.target.class != 'windows'))
+config [bool] config.libcpptrace.symbols_with_addr2line    ?= false
 config [bool] config.libcpptrace.symbols_with_libdl        ?= false
 config [bool] config.libcpptrace.symbols_with_nothing      ?= false
 
